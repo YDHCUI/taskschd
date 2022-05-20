@@ -1,7 +1,7 @@
 [package]
 name = "taskschd"
 version = "0.0.1"
-authors = ["ydhcui"]
+authors = ["ydhcui <ydhcui@qq.com>"]
 license = "MPL-2.0"
 edition = "2018"
 description = "windows taskschd demo"
