@@ -4,6 +4,10 @@ version = "0.0.1"
 authors = ["ydhcui"]
 license = "MPL-2.0"
 edition = "2018"
+description = "windows taskschd demo"
+homepage = "https://github.com/ydhcui"
+keywords = ["task","taskschd"]
+repository = "https://github.com/ydhcui/taskschd.git"
 
 [dependencies]
 winapi = { version = "^0.3.8", features = ["taskschd","combaseapi","objbase","memoryapi","processthreadsapi","psapi","winbase","synchapi","threadpoolapiset"] }
