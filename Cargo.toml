@@ -1,0 +1,10 @@
+[package]
+name = "taskschd"
+version = "0.0.1"
+authors = ["ydhcui"]
+license = "MPL-2.0"
+edition = "2018"
+
+[dependencies]
+winapi = { version = "^0.3.8", features = ["taskschd","combaseapi","objbase","memoryapi","processthreadsapi","psapi","winbase","synchapi","threadpoolapiset"] }
+chrono = "0.4"
