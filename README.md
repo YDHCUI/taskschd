@@ -1,6 +1,4 @@
-/* This Source Code Form is subject to the terms of the Mozilla Public
- * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+```rust
 
 use std::ffi::{OsStr, OsString};
 use std::path::Path;
@@ -8,9 +6,8 @@ use std::path::Path;
 use comedy::HResult;
 use log::warn;
 
-use crate::ole_utils::BString;
-use crate::taskschd::{hr_is_not_found, TaskService};
-use crate::try_to_bstring;
+use taskschd::ole_utils::{BString,try_to_bstring};
+use taskschd::taskschd::{hr_is_not_found, TaskService};
 
 fn folder_name() -> Result<BString, HResult> {
     try_to_bstring!("\\")
@@ -109,6 +106,8 @@ fn register(name: &OsStr) -> Result<(), failure::Error>{
 
     registered_task.set_sd(&sddl)?;
     }
+
+    Ok(())
 }
 
 pub fn unregister(name: &OsStr) -> Result<(), failure::Error> {
@@ -170,3 +169,6 @@ pub fn run_on_demand(name: &OsStr) -> Result<(), failure::Error> {
 
     Ok(())
 }
+
+
+```
