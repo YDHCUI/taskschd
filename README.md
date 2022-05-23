@@ -114,7 +114,7 @@ fn register(name: &OsStr) -> Result<(), failure::Error>{
     Ok(())
 }
 
-pub fn unregister(name: &OsStr) -> Result<(), failure::Error> {
+fn unregister(name: &OsStr) -> Result<(), failure::Error> {
     let name = try_to_bstring!(name)?;
     let folder_name = folder_name()?;
 
@@ -162,7 +162,7 @@ pub fn unregister(name: &OsStr) -> Result<(), failure::Error> {
     Ok(())
 }
 
-pub fn run_on_demand(name: &OsStr) -> Result<(), failure::Error> {
+fn run_on_demand(name: &OsStr) -> Result<(), failure::Error> {
     let name = try_to_bstring!(name)?;
     let folder_name = folder_name()?;
 
