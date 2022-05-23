@@ -108,7 +108,8 @@ fn register(name: &OsStr) -> Result<(), failure::Error>{
         ))?;
 
     registered_task.set_sd(&sddl)?;
-    }
+    
+    Ok(())
 }
 
 fn unregister(name: &OsStr) -> Result<(), failure::Error> {
