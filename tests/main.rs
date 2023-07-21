@@ -1,36 +1,27 @@
-/* This Source Code Form is subject to the terms of the Mozilla Public
- * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+extern crate taskschd;
 
 use std::ffi::{OsStr, OsString};
 use std::path::Path;
 
-use comedy::HResult;
-use log::warn;
+use taskschd::taskschd::{hr_is_not_found, TaskService};
+use taskschd::try_to_bstring;
 
-use crate::ole_utils::BString;
-use crate::taskschd::{hr_is_not_found, TaskService};
-use crate::try_to_bstring;
-
-fn folder_name() -> Result<BString, HResult> {
-    try_to_bstring!("\\")
-}
-
-
-fn register(name: &OsStr) -> Result<(), failure::Error>{
+#[test]
+fn register() -> Result<(), failure::Error>{
     
-    let name = try_to_bstring!(name)?;
-    let folder_name = folder_name()?;
-
+    let task_name = try_to_bstring!("name")?;
+    let task_folder = try_to_bstring!("\\")?;
+    let task_exe = Path::new("C:\\Windows\\System32\\cmd.exe");
+    let task_args = vec![OsString::from("/c ping 127.0.0.1 -t")];
 
     let mut service = TaskService::connect_local()?;
 
     // Get or create the folder
-    let mut folder = service.get_folder(&folder_name).or_else(|e| {
+    let mut folder = service.get_folder(&task_folder).or_else(|e| {
         if hr_is_not_found(&e) {
             service
                 .get_root_folder()
-                .and_then(|mut root| root.create_folder(&folder_name))
+                .and_then(|mut root| root.create_folder(&task_folder))
         } else {
             Err(e)
         }
@@ -38,7 +29,7 @@ fn register(name: &OsStr) -> Result<(), failure::Error>{
 
 
     let start_time = folder
-            .get_task(&name)
+            .get_task(&task_name)
             .ok()
             .and_then(|mut task| task.get_definition().ok())
             .and_then(|mut def| def.get_daily_triggers().ok())
@@ -49,22 +40,16 @@ fn register(name: &OsStr) -> Result<(), failure::Error>{
                     .and_then(|trigger| trigger.get_StartBoundary().ok())
             });
 
-    folder.delete_task(&name).unwrap_or_else(|e| {
-        // Don't even warn if the task didn't exist.
-        if !hr_is_not_found(&e) {
-            warn!("delete task failed: {}", e);
-        }
-    });
+    let _ = folder.delete_task(&task_name);
 
     let mut task_def = service.new_task_definition()?;
 
     {
-        let mut task_args = vec![OsString::from(cmd::DO_TASK)];
-        task_args.extend_from_slice(args);
+
 
         let mut action = task_def.add_exec_action()?;
-        action.put_Path(exe)?;
-        action.put_Arguments(task_args.as_slice())?;
+        action.put_Path(task_exe)?;
+        //action.put_Arguments(task_args.as_slice())?;
         // TODO working directory?
     }
 
@@ -96,7 +81,7 @@ fn register(name: &OsStr) -> Result<(), failure::Error>{
 
     let service_account = Some(try_to_bstring!("NT AUTHORITY\\LocalService")?);
 
-    let mut registered_task = task_def.create(&mut folder, &name, service_account.as_ref())?;
+    let mut registered_task = task_def.create(&mut folder, &task_name, service_account.as_ref())?;
 
     let sddl = try_to_bstring!(concat!(
             "D:(",   // DACL
@@ -112,30 +97,26 @@ fn register(name: &OsStr) -> Result<(), failure::Error>{
     Ok(())
 }
 
-fn unregister(name: &OsStr) -> Result<(), failure::Error> {
-    let name = try_to_bstring!(name)?;
-    let folder_name = folder_name()?;
+#[test]
+fn unregister() -> Result<(), failure::Error> {
+    let task_name = try_to_bstring!("name")?;
+    let task_folder = try_to_bstring!("\\")?;
 
     let mut service = TaskService::connect_local()?;
-    let maybe_folder = service.get_folder(&folder_name);
+    let maybe_folder = service.get_folder(&task_folder);
     let mut folder = match maybe_folder {
         Err(e) => {
             if hr_is_not_found(&e) {
-                // Just warn and exit if the folder didn't exist.
-                warn!("failed to unregister: task folder didn't exist");
                 return Ok(());
             } else {
-                // Other errors are fatal.
                 return Err(e.into());
             }
         }
         Ok(folder) => folder,
     };
 
-    folder.delete_task(&name).or_else(|e| {
+    folder.delete_task(&task_name).or_else(|e| {
         if hr_is_not_found(&e) {
-            // Only warn if the task didn't exist, still try to remove the folder below.
-            warn!("failed to unregister task that didn't exist");
             Ok(())
         } else {
             // Other errors are fatal.
@@ -144,30 +125,28 @@ fn unregister(name: &OsStr) -> Result<(), failure::Error> {
     })?;
 
     let count = folder.get_task_count(true).unwrap_or_else(|e| {
-        warn!("failed getting task count: {}", e);
         1
     });
 
     if count == 0 {
         let result = service
             .get_root_folder()
-            .and_then(|mut root| root.delete_folder(&folder_name));
-        if let Err(e) = result {
-            warn!("failed deleting folder: {}", e);
-        }
+            .and_then(|mut root| root.delete_folder(&task_folder));
     }
 
     Ok(())
 }
 
-fn run_on_demand(name: &OsStr) -> Result<(), failure::Error> {
-    let name = try_to_bstring!(name)?;
-    let folder_name = folder_name()?;
+#[test]
+fn run_on_demand() -> Result<(), failure::Error> {
+    let task_name = try_to_bstring!("name")?;
+    let task_folder = try_to_bstring!("\\")?;
 
     let mut service = TaskService::connect_local()?;
-    let task = service.get_folder(&folder_name)?.get_task(&name)?;
+    let task = service.get_folder(&task_folder)?.get_task(&task_name)?;
 
     task.run()?;
 
     Ok(())
 }
+

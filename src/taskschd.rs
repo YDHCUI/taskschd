@@ -19,7 +19,7 @@ use std::os::windows::ffi::{OsStrExt, OsStringExt};
 use std::path::Path;
 use std::ptr;
 
-use comedy::com::{create_instance_inproc_server, ComRef};
+use comedy::com::{create_instance_inproc_server, INIT_MTA, ComRef};
 use comedy::error::{HResult, Win32Error};
 use comedy::{com_call, com_call_getter};
 use failure::Fail;
@@ -122,6 +122,15 @@ pub struct TaskService(ComRef<ITaskService>);
 impl TaskService {
     pub fn connect_local() -> Result<TaskService, ConnectTaskServiceError> {
         use self::ConnectTaskServiceError::*;
+
+        INIT_MTA.with(|com| {
+            let _com = match com {
+                Err(e) => return Err(e.clone()),
+                Ok(ref _com) => _com,
+            };
+            //do_com_stuff(com);
+            Ok(())
+        }).map_err(CreateInstanceFailed)?;
 
         let task_service = create_instance_inproc_server::<taskschd::TaskScheduler, ITaskService>()
             .map_err(CreateInstanceFailed)?;

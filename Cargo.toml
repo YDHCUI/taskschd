@@ -1,6 +1,6 @@
 [package]
 name = "taskschd"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["ydhcui <ydhcui@qq.com>"]
 license = "MPL-2.0"
 edition = "2018"
@@ -12,12 +12,6 @@ repository = "https://github.com/ydhcui/taskschd.git"
 
 [dependencies]
 chrono = "0.4"
-comedy = "0.1"
+comedy = "0.2"
 failure = "0.1"
-percent-encoding = "2.1"
-rust-ini = "0.10"
-wio = "0.2"
-xml-rs = "0.8"
-
-log = { version = "0.4", features = ["std"] }
 winapi = { version = "0.3.8", features = ["errhandlingapi", "minwindef", "ntdef", "oaidl", "oleauto", "sysinfoapi", "taskschd", "winbase", "winerror", "winnt", "winreg", "wtypes"] }
