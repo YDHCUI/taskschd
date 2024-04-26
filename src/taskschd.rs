@@ -37,7 +37,8 @@ use winapi::shared::{
 
 use winapi::um::taskschd::{
     self, IDailyTrigger, IExecAction, IRegisteredTask, IRegistrationInfo, IRunningTask,
-    ITaskDefinition, ITaskFolder, ITaskService, ITaskSettings, ITrigger, ITriggerCollection,
+    ITaskDefinition, ITaskFolder, ITaskService, ITaskSettings, ITrigger, ITriggerCollection, 
+    IBootTrigger
 };
 
 pub fn hr_is_not_found(hr: &HResult) -> bool {
@@ -295,7 +296,7 @@ impl TaskDefinition {
         unsafe { self.add_action(taskschd::TASK_ACTION_EXEC) }.map(ExecAction)
     }
 
-    unsafe fn add_trigger<T: winapi::Interface>(
+    pub unsafe fn add_trigger<T: winapi::Interface>(
         &mut self,
         trigger_type: taskschd::TASK_TRIGGER_TYPE2,
     ) -> Result<ComRef<T>, HResult> {
@@ -306,6 +307,10 @@ impl TaskDefinition {
 
     pub fn add_daily_trigger(&mut self) -> Result<DailyTrigger, HResult> {
         unsafe { self.add_trigger(taskschd::TASK_TRIGGER_DAILY) }.map(DailyTrigger)
+    }
+
+    pub fn add_boot_trigger(&mut self) -> Result<BootTrigger, HResult> {
+        unsafe { self.add_trigger(taskschd::TASK_TRIGGER_BOOT) }.map(BootTrigger)
     }
 
     pub fn get_daily_triggers(&mut self) -> Result<Vec<DailyTrigger>, HResult> {
@@ -434,6 +439,7 @@ pub enum InstancesPolicy {
     StopExisting = taskschd::TASK_INSTANCES_STOP_EXISTING,
 }
 
+pub struct BootTrigger(ComRef<IBootTrigger>);
 pub struct DailyTrigger(ComRef<IDailyTrigger>);
 
 impl DailyTrigger {
