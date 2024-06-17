@@ -85,9 +85,9 @@ fn register() -> Result<(), failure::Error>{
         // TODO: 12-hourly trigger? logon trigger?
     }
 
-    let service_account = Some(try_to_bstring!("NT AUTHORITY\\LocalService")?);
+    //let service_account = Some(try_to_bstring!("NT AUTHORITY\\LocalService")?);
 
-    let mut registered_task = task_def.create(&mut folder, &task_name, service_account.as_ref())?;
+    let mut registered_task = task_def.create(&mut folder, &task_name, None)?;
 
     let sddl = try_to_bstring!(concat!(
             "D:(",   // DACL
