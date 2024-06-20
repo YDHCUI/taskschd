@@ -22,7 +22,7 @@ pub struct TaskInfo {
 
     pub last_runtime: String,
     pub next_runtime: String,
-    pub last_task_result: String,
+    pub last_task_result: i32,
 
     pub author: String,
     pub principal: String,
@@ -123,11 +123,11 @@ impl TaskFolder {
                     last_runtime: task.get_last_runtime().unwrap_or_default(),
                     next_runtime: task.get_next_runtime().unwrap_or_default(),
                     xml: "".to_string(),
-                    last_task_result: "".to_string(),
+                    last_task_result: 0,
                 };
 
                 if let Ok(result) = task.get_LastTaskResult(){
-                    task_info.last_task_result = format!("0x{:X}",result)
+                    task_info.last_task_result = result
                 }
                 if let Ok(mut principal) = definition.get_principal() {
                     task_info.principal = principal.to_string();
