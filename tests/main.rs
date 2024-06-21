@@ -13,7 +13,7 @@ fn get_tasks_test() -> Result<(), failure::Error>{
     let mut service = TaskService::connect_local()?;
     let mut tasks = service.get_all_tasks()?;
     for mut task in tasks {
-        println!("task path: {}, state: {}, last_runtime: {}", task.path, task.state, task.last_task_result);
+        println!("task path: {}, state: {}, last_runtime: {}", task.path, task.state, task.user_id);
     }
     Ok(())
 }
@@ -40,6 +40,18 @@ fn stop_tasks_test() -> Result<(), failure::Error>{
         action.put_path("c:\\windows\\system32\\calc1.exe")?;
         println!("after: {}", action.get_Path()?);
     }
+    task_def.update(&mut folder, &try_to_bstring!("Update")?)?;
+    Ok(())
+}
+#[test]
+fn update_task_user_id_test() -> Result<(), failure::Error>{
+    let mut service = TaskService::connect_local()?;
+    let mut folder = service.get_folder(&try_to_bstring!(r#"\Microsoft\Windows\WindowsUpdate"#)?)?;
+    let mut task = folder.get_task(&try_to_bstring!("Update")?)?;
+
+    let mut task_def = task.get_definition()?;
+    task_def.get_principal()?.put_UserId("Administrator")?;
+
     task_def.update(&mut folder, &try_to_bstring!("Update")?)?;
     Ok(())
 }

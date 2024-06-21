@@ -26,6 +26,7 @@ pub struct TaskInfo {
 
     pub author: String,
     pub principal: String,
+    pub user_id: String,
     pub xml: String,
 
 }
@@ -124,14 +125,16 @@ impl TaskFolder {
                     next_runtime: task.get_next_runtime().unwrap_or_default(),
                     xml: "".to_string(),
                     last_task_result: 0,
+                    user_id: "".to_string(),
                 };
 
                 if let Ok(result) = task.get_LastTaskResult(){
                     task_info.last_task_result = result
                 }
+
                 if let Ok(mut principal) = definition.get_principal() {
                     task_info.principal = principal.to_string();
-
+                    task_info.user_id = principal.get_UserId().unwrap_or_default();
                 }
                 let xml = TaskDefinition::get_xml(&definition.0).unwrap_or_default();
                 task_info.xml = xml.to_string_lossy().to_string();

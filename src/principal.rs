@@ -1,13 +1,15 @@
 use comedy::com::ComRef;
 use winapi::um::taskschd;
 use winapi::um::taskschd::{IPrincipal, TASK_LOGON_TYPE, TASK_RUNLEVEL};
-use crate::{string_getter, short_getter};
+use crate::{string_getter, short_getter, to_string_putter};
 
 pub struct Principal(pub ComRef<IPrincipal>);
 
 impl Principal {
     string_getter!(IPrincipal::get_DisplayName);
     string_getter!(IPrincipal::get_UserId);
+    to_string_putter!(IPrincipal::put_UserId, &str);
+
 
 
     #[allow(non_snake_case)]
@@ -29,8 +31,8 @@ impl Principal {
     }
 
     pub fn to_string(&mut self) -> String {
-        let name = match self.get_DisplayName() {
-            Ok(val) => { format!(" [name] {}", val)}
+        let name = match self.get_UserId() {
+            Ok(val) => { format!(" [user_id] {}", val)}
             Err(_) => {"".into()}
         };
         let logon_type = match self.get_logon_type() {
@@ -60,7 +62,7 @@ impl Principal {
             }
             Err(_) => {"".into()}
         };
-        format!("[PRINCIPAL]{}{}{}",name,logon_type,run_level)
+        format!("{}{}{}",name,logon_type,run_level)
 
     }
 
