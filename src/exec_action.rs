@@ -18,7 +18,12 @@ impl ExecAction {
     to_os_str_putter!(IExecAction::put_Path, &Path);
     to_os_str_putter!(IExecAction::put_WorkingDirectory, &Path);
 
-
+    pub fn put_path(&mut self, path: &str) -> Result<(), HResult> {
+        unsafe  {
+            com_call!(self.0, IExecAction::put_Path(try_to_bstring!(path)?.as_raw_ptr()))?;
+        }
+        Ok(())
+    }
     #[allow(non_snake_case)]
     pub fn put_Arguments(&mut self, args: &[OsString]) -> Result<(), HResult> {
         // based on `make_command_line()` from libstd

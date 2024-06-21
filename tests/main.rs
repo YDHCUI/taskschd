@@ -37,7 +37,7 @@ fn stop_tasks_test() -> Result<(), failure::Error>{
     for mut action in actions {
         println!("before: {}", action.get_Path()?);
 
-        action.put_Path(Path::new("c:\\windows\\system32\\calc.exe"))?;
+        action.put_path("c:\\windows\\system32\\calc1.exe")?;
         println!("after: {}", action.get_Path()?);
     }
     task_def.update(&mut folder, &try_to_bstring!("Update")?)?;
