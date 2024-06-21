@@ -1,16 +1,16 @@
 use comedy::com::ComRef;
 use winapi::um::taskschd::{ ITrigger, IMonthlyTrigger};
-use crate::{bool_getter, bstring_getter, get_repetition, long_getter, short_getter};
+use crate::{bool_getter, string_getter, get_repetition, long_getter, short_getter};
 
 pub struct MonthlyTrigger(pub ComRef<IMonthlyTrigger>);
 
 impl MonthlyTrigger {
     bool_getter!(ITrigger::get_Enabled);
     get_repetition!(ITrigger::get_Repetition);
-    bstring_getter!(ITrigger::get_StartBoundary);
-    bstring_getter!(ITrigger::get_EndBoundary);
+    string_getter!(ITrigger::get_StartBoundary);
+    string_getter!(ITrigger::get_EndBoundary);
 
-    bstring_getter!(IMonthlyTrigger::get_RandomDelay);
+    string_getter!(IMonthlyTrigger::get_RandomDelay);
 
     long_getter!(IMonthlyTrigger::get_DaysOfMonth);
     short_getter!(IMonthlyTrigger::get_MonthsOfYear);

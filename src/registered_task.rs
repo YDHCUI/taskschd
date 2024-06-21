@@ -7,14 +7,21 @@ use winapi::um::taskschd;
 use winapi::um::taskschd::{IRegisteredTask, IRunningTask, TASK_STATE};
 use crate::ole_utils::{BString, date_to_datetime, OptionBstringExt};
 use crate::task_definition::TaskDefinition;
-use crate::{bstring_getter, long_getter, try_to_bstring};
+use crate::{bool_putter, string_getter, long_getter, try_to_bstring};
 pub struct RegisteredTask(pub ComRef<IRegisteredTask>);
 
 impl RegisteredTask {
-    bstring_getter!(IRegisteredTask::get_Name);
-    bstring_getter!(IRegisteredTask::get_Path);
+    string_getter!(IRegisteredTask::get_Name);
+    string_getter!(IRegisteredTask::get_Path);
     long_getter!(IRegisteredTask::get_LastTaskResult);
+    bool_putter!(IRegisteredTask::put_Enabled);
 
+    pub fn stop(&mut self) -> Result<(), HResult> {
+        unsafe {
+            com_call!(self.0, IRegisteredTask::Stop(0))?;
+        }
+        Ok(())
+    }
 
     pub fn get_last_runtime(&mut self) -> Result<String, HResult> {
         unsafe {

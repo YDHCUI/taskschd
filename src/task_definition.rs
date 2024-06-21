@@ -7,6 +7,7 @@ use winapi::shared::ntdef::LONG;
 use winapi::um::taskschd;
 use winapi::um::taskschd::{IAction, ITaskDefinition, ITaskFolder, ITrigger, ITriggerCollection};
 use crate::action_collection::ActionCollection;
+use crate::bstring_putter;
 use crate::trigger_boot::BootTrigger;
 use crate::trigger_daily::DailyTrigger;
 use crate::exec_action::ExecAction;
@@ -25,6 +26,7 @@ use crate::trigger_weekly::WeeklyTrigger;
 pub struct TaskDefinition(pub ComRef<ITaskDefinition>);
 
 impl TaskDefinition {
+    bstring_putter!(ITaskDefinition::put_XmlText);
     pub fn get_settings(&mut self) -> Result<TaskSettings, HResult> {
         unsafe { com_call_getter!(|s| self.0, ITaskDefinition::get_Settings(s)) }.map(TaskSettings)
     }
@@ -50,7 +52,38 @@ impl TaskDefinition {
         action.cast()
     }
 
-    pub fn get_exec_actions(&mut self) -> Result<Vec<String>, HResult> {
+    pub fn get_exec_actions(&mut self) -> Result<Vec<ExecAction>, HResult> {
+        use self::taskschd::IActionCollection;
+        let mut exec_actions = Vec::<ExecAction>::new();
+        unsafe {
+            let mut actions = com_call_getter!(|ac| self.0, ITaskDefinition::get_Actions(ac)).map(ActionCollection)?;
+            let count = actions.get_Count()?;
+            for i in 1..=count {
+                let action = com_call_getter!(|a| actions.0, IActionCollection::get_Item(i, a))?;
+                let mut action_type = 0;
+                com_call!(action, IAction::get_Type(&mut action_type))?;
+                if action_type == taskschd::TASK_ACTION_EXEC {
+                    let exec_action = ExecAction(action.cast()?);
+                    exec_actions.push(exec_action)
+                }
+            }
+            //
+            // for i in 1..=count {
+            //     let action = com_call_getter!(|a| actions.0, IActionCollection::get_Item(i, a))?;
+            //     let mut action_type = 0;
+            //     com_call!(action, IAction::get_Type(&mut action_type))?;
+            //     if action_type == taskschd::TASK_ACTION_EXEC {
+            //         let mut exec_action = ExecAction(action.cast()?);
+            //         println!("path: {}",exec_action.get_Path()?);
+            //     }
+            // }
+            //
+            // com_call!(self.0, ITaskDefinition::put_Actions(actions.0.as_raw_ptr()))?;
+            Ok(exec_actions)
+
+        }
+    }
+    pub fn get_exec_actions_string(&mut self) -> Result<Vec<String>, HResult> {
         use self::taskschd::IActionCollection;
         let mut exec_actions = Vec::<String>::new();
         unsafe {
@@ -63,7 +96,7 @@ impl TaskDefinition {
                 if action_type == taskschd::TASK_ACTION_EXEC {
                     let mut action_impl = ExecAction(action.cast()?);
                     let args = action_impl.get_Arguments().unwrap_or_default();
-                    let msg = format!("{} {}", action_impl.get_Path()?, args);
+                    let msg = format!("[cmd] {} [args] {}", action_impl.get_Path()?, args);
                     exec_actions.push(msg)
 
                 }
@@ -178,6 +211,28 @@ impl TaskDefinition {
         service_account: Option<&BString>,
     ) -> Result<RegisteredTask, HResult> {
         self.register_impl(folder, task_name, service_account, taskschd::TASK_CREATE)
+    }
+    pub fn update(
+        &mut self,
+        folder: &mut TaskFolder,
+        task_name: &BString,
+    ) -> Result<(), HResult> {
+        // self.register_impl(folder, task_name, service_account, taskschd::TASK_UPDATE)
+        unsafe {
+            com_call!(folder.0,
+                ITaskFolder::RegisterTaskDefinition(
+                    task_name.as_raw_ptr(),
+                    self.0.as_raw_ptr(),
+                    taskschd::TASK_CREATE_OR_UPDATE as LONG,
+                    empty_variant(),
+                    empty_variant(),
+                    taskschd::TASK_LOGON_INTERACTIVE_TOKEN,
+                    empty_variant(),
+                    ptr::null_mut()
+                )
+            )?;
+        }
+        Ok(())
     }
 
     fn register_impl(

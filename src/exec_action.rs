@@ -6,17 +6,18 @@ use comedy::{com_call, HResult, Win32Error};
 use winapi::shared::winerror::ERROR_BAD_ARGUMENTS;
 use winapi::um::taskschd::IExecAction;
 use crate::ole_utils::BString;
-use crate::{bstring_getter, to_os_str_putter};
+use crate::{string_getter, bstring_putter, to_os_str_putter, try_to_bstring};
 
 pub struct ExecAction(pub ComRef<IExecAction>);
 
 impl ExecAction {
-    bstring_getter!(IExecAction::get_Path);
-    bstring_getter!(IExecAction::get_Arguments);
+    string_getter!(IExecAction::get_Path);
+    string_getter!(IExecAction::get_Arguments);
 
 
     to_os_str_putter!(IExecAction::put_Path, &Path);
     to_os_str_putter!(IExecAction::put_WorkingDirectory, &Path);
+
 
     #[allow(non_snake_case)]
     pub fn put_Arguments(&mut self, args: &[OsString]) -> Result<(), HResult> {

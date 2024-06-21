@@ -1,16 +1,16 @@
 use comedy::com::ComRef;
 use winapi::um::taskschd::{ ITimeTrigger, ITrigger};
-use crate::{bool_getter, bstring_getter, get_repetition};
+use crate::{bool_getter, string_getter, get_repetition};
 pub struct TimeTrigger(pub ComRef<ITimeTrigger>);
 
 impl TimeTrigger {
     bool_getter!(ITrigger::get_Enabled);
     get_repetition!(ITrigger::get_Repetition);
-    bstring_getter!(ITrigger::get_StartBoundary);
-    bstring_getter!(ITrigger::get_EndBoundary);
+    string_getter!(ITrigger::get_StartBoundary);
+    string_getter!(ITrigger::get_EndBoundary);
 
 
-    bstring_getter!(ITimeTrigger::get_RandomDelay);
+    string_getter!(ITimeTrigger::get_RandomDelay);
 
     pub fn to_string(&mut self) -> String {
         let enabled = match self.get_Enabled() {

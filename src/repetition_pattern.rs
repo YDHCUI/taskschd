@@ -1,12 +1,12 @@
 use comedy::com::ComRef;
 use winapi::um::taskschd::IRepetitionPattern;
-use crate::{bool_getter, bstring_getter};
+use crate::{bool_getter, string_getter};
 
 pub struct RepetitionPattern(pub ComRef<IRepetitionPattern>);
 
 impl RepetitionPattern {
-    bstring_getter!(IRepetitionPattern::get_Interval);
-    bstring_getter!(IRepetitionPattern::get_Duration);
+    string_getter!(IRepetitionPattern::get_Interval);
+    string_getter!(IRepetitionPattern::get_Duration);
     bool_getter!(IRepetitionPattern::get_StopAtDurationEnd);
 
     pub fn to_string(&mut self) -> String {

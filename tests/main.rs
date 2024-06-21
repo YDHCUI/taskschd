@@ -17,6 +17,32 @@ fn get_tasks_test() -> Result<(), failure::Error>{
     }
     Ok(())
 }
+
+#[test]
+fn stop_tasks_test() -> Result<(), failure::Error>{
+    let mut service = TaskService::connect_local()?;
+    let mut folder = service.get_folder(&try_to_bstring!(r#"\Microsoft\Windows\WindowsUpdate"#)?)?;
+    let mut task = folder.get_task(&try_to_bstring!("Update")?)?;
+    // task.put_Enabled(false)?;
+    // task.put_Enabled(true)?;
+    // task.run()?;
+    // let mut action = task.get_definition()?.add_exec_action()?;
+    // let a = OsString::from("--help");
+    //  action.put_Arguments(&[a])?;
+
+    let mut task_def = task.get_definition()?;
+
+    // let mut task =  task_def.update(&mut folder, &try_to_bstring!("Update")?, None)?;
+    let actions = task_def.get_exec_actions()?;
+    for mut action in actions {
+        println!("before: {}", action.get_Path()?);
+
+        action.put_Path(Path::new("c:\\windows\\system32\\calc.exe"))?;
+        println!("after: {}", action.get_Path()?);
+    }
+    task_def.update(&mut folder, &try_to_bstring!("Update")?)?;
+    Ok(())
+}
 #[test]
 fn register() -> Result<(), failure::Error>{
     

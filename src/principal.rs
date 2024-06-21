@@ -1,13 +1,13 @@
 use comedy::com::ComRef;
 use winapi::um::taskschd;
 use winapi::um::taskschd::{IPrincipal, TASK_LOGON_TYPE, TASK_RUNLEVEL};
-use crate::{bstring_getter, short_getter};
+use crate::{string_getter, short_getter};
 
 pub struct Principal(pub ComRef<IPrincipal>);
 
 impl Principal {
-    bstring_getter!(IPrincipal::get_DisplayName);
-    bstring_getter!(IPrincipal::get_UserId);
+    string_getter!(IPrincipal::get_DisplayName);
+    string_getter!(IPrincipal::get_UserId);
 
 
     #[allow(non_snake_case)]

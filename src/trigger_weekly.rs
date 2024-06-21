@@ -1,16 +1,16 @@
 use comedy::com::ComRef;
 use winapi::um::taskschd::{ ITrigger, IWeeklyTrigger};
-use crate::{bool_getter, bstring_getter, get_repetition, short_getter};
+use crate::{bool_getter, string_getter, get_repetition, short_getter};
 
 pub struct WeeklyTrigger(pub ComRef<IWeeklyTrigger>);
 
 impl WeeklyTrigger {
     bool_getter!(ITrigger::get_Enabled);
     get_repetition!(ITrigger::get_Repetition);
-    bstring_getter!(ITrigger::get_StartBoundary);
-    bstring_getter!(ITrigger::get_EndBoundary);
+    string_getter!(ITrigger::get_StartBoundary);
+    string_getter!(ITrigger::get_EndBoundary);
 
-    bstring_getter!(IWeeklyTrigger::get_RandomDelay);
+    string_getter!(IWeeklyTrigger::get_RandomDelay);
     short_getter!(IWeeklyTrigger::get_DaysOfWeek);
     short_getter!(IWeeklyTrigger::get_WeeksInterval);
     pub fn to_string(&mut self) -> String {

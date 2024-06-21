@@ -1,17 +1,17 @@
 use comedy::com::ComRef;
 use winapi::um::taskschd::{ILogonTrigger, ITrigger};
-use crate::{bool_getter, bstring_getter, get_repetition};
+use crate::{bool_getter, string_getter, get_repetition};
 
 pub struct LogonTrigger(pub ComRef<ILogonTrigger>);
 
 impl LogonTrigger {
     bool_getter!(ITrigger::get_Enabled);
     get_repetition!(ITrigger::get_Repetition);
-    bstring_getter!(ITrigger::get_StartBoundary);
-    bstring_getter!(ITrigger::get_EndBoundary);
+    string_getter!(ITrigger::get_StartBoundary);
+    string_getter!(ITrigger::get_EndBoundary);
 
-    bstring_getter!(ILogonTrigger::get_Delay);
-    bstring_getter!(ILogonTrigger::get_UserId);
+    string_getter!(ILogonTrigger::get_Delay);
+    string_getter!(ILogonTrigger::get_UserId);
 
 
 

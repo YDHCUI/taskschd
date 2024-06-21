@@ -1,19 +1,19 @@
 
 use comedy::com::ComRef;
 use winapi::um::taskschd::{ ITrigger, IEventTrigger};
-use crate::{bool_getter, bstring_getter, get_repetition};
+use crate::{bool_getter, string_getter, get_repetition};
 
 pub struct EventTrigger(pub ComRef<IEventTrigger>);
 
 impl EventTrigger {
     bool_getter!(ITrigger::get_Enabled);
     get_repetition!(ITrigger::get_Repetition);
-    bstring_getter!(ITrigger::get_StartBoundary);
-    bstring_getter!(ITrigger::get_EndBoundary);
+    string_getter!(ITrigger::get_StartBoundary);
+    string_getter!(ITrigger::get_EndBoundary);
 
 
-    bstring_getter!(IEventTrigger::get_Subscription);
-    bstring_getter!(IEventTrigger::get_Delay);
+    string_getter!(IEventTrigger::get_Subscription);
+    string_getter!(IEventTrigger::get_Delay);
 
     // bool_getter!(IEventTrigger::get_RunOnLastDayOfMonth);
 

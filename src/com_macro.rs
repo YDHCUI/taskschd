@@ -49,7 +49,7 @@ macro_rules! bstring_putter {
 }
 
 #[macro_export]
-macro_rules! bstring_getter {
+macro_rules! string_getter {
     ($interface:ident :: $method:ident) => {
         #[allow(non_snake_case)]
         pub fn $method(&mut self) -> Result<String, comedy::HResult> {

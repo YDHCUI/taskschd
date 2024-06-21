@@ -4,7 +4,7 @@ use comedy::error::{ErrorAndSource, HResultInner};
 use winapi::shared::ntdef::LONG;
 use winapi::um::taskschd;
 use winapi::um::taskschd::{ITaskFolder, ITaskFolderCollection};
-use crate::bstring_getter;
+use crate::string_getter;
 use crate::ole_utils::{BString, empty_variant, IntoVariantI32};
 use crate::registered_task::RegisteredTask;
 use crate::registration_info::RegistrationInfo;
@@ -33,8 +33,8 @@ pub struct TaskInfo {
 pub struct TaskFolder(pub(crate) ComRef<ITaskFolder>);
 
 impl TaskFolder {
-    bstring_getter!(ITaskFolder::get_Name);
-    bstring_getter!(ITaskFolder::get_Path);
+    string_getter!(ITaskFolder::get_Name);
+    string_getter!(ITaskFolder::get_Path);
 
     pub fn get_task(&mut self, task_name: &BString) -> Result<RegisteredTask, HResult> {
         unsafe {
@@ -142,7 +142,7 @@ impl TaskFolder {
                 if let Ok(triggers) = definition.get_all_triggers() {
                     task_info.triggers = triggers.join("\n")
                 }
-                if let Ok(exec_actions) = definition.get_exec_actions() {
+                if let Ok(exec_actions) = definition.get_exec_actions_string() {
                     task_info.exec_actions = exec_actions.join("\n")
                 }
                 task_infos.push(task_info)

@@ -2,7 +2,7 @@ use comedy::com::ComRef;
 use comedy::{com_call, HResult};
 use winapi::shared::ntdef::SHORT;
 use winapi::um::taskschd::{IDailyTrigger, ITrigger};
-use crate::{bool_getter, bstring_getter, datetime_putter, get_repetition, short_getter};
+use crate::{bool_getter, string_getter, datetime_putter, get_repetition, short_getter};
 use crate::ole_utils::BString;
 
 pub struct DailyTrigger(pub ComRef<IDailyTrigger>);
@@ -10,11 +10,11 @@ pub struct DailyTrigger(pub ComRef<IDailyTrigger>);
 impl DailyTrigger {
     bool_getter!(ITrigger::get_Enabled);
     get_repetition!(ITrigger::get_Repetition);
-    bstring_getter!(ITrigger::get_StartBoundary);
-    bstring_getter!(ITrigger::get_EndBoundary);
+    string_getter!(ITrigger::get_StartBoundary);
+    string_getter!(ITrigger::get_EndBoundary);
 
     short_getter!(IDailyTrigger::get_DaysInterval);
-    bstring_getter!(IDailyTrigger::get_RandomDelay);
+    string_getter!(IDailyTrigger::get_RandomDelay);
 
     datetime_putter!(IDailyTrigger::put_StartBoundary);
 
