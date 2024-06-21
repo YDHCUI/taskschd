@@ -8,11 +8,16 @@ use std::mem;
 use std::os::windows::ffi::OsStrExt;
 use std::ptr::NonNull;
 use std::slice;
+use chrono::NaiveDateTime;
 
 use winapi::shared::{winerror, wtypes};
-use winapi::um::{oaidl, oleauto};
+use winapi::um::{oaidl, oleauto, taskschd};
 
-use comedy::HResult;
+use comedy::{HResult, Win32Error};
+use failure::Fail;
+use winapi::shared::winerror::{ERROR_ALREADY_EXISTS, ERROR_FILE_NOT_FOUND};
+use winapi::um::oaidl::VARIANT;
+use winapi::um::oleauto::VariantInit;
 
 
 #[derive(Debug)]
@@ -55,6 +60,18 @@ impl BString {
             v
         }
     }
+    // 添加一个方法来返回 BString 的长度
+    pub fn len(&self) -> u32 {
+        unsafe { oleauto::SysStringLen(self.0.as_ptr()) }
+    }
+
+    // 将 BString 转换回 Rust String
+    pub fn to_string(&self) -> String {
+        let len = self.len() as usize;
+        let slice = unsafe { slice::from_raw_parts(self.0.as_ptr(), len) };
+        String::from_utf16_lossy(slice)
+    }
+
 }
 
 impl Drop for BString {
@@ -119,4 +136,72 @@ impl IntoVariantBool for bool {
             wtypes::VARIANT_FALSE
         }
     }
+}
+
+
+pub trait IntoVariantI32 {
+    fn into_variant_i32(self) -> VARIANT;
+}
+impl IntoVariantI32 for i32 {
+    fn into_variant_i32(self) -> VARIANT {
+        unsafe {
+            // 初始化 VARIANT
+            let mut var = mem::zeroed::<VARIANT>();
+            VariantInit(&mut var);
+            // 设置 VARIANT 为整数类型 (VT_I4) 并赋值
+            (*var.n1.n2_mut()).vt = wtypes::VT_I4 as u16; // 设置 VARTYPE
+            *(*var.n1.n2_mut()).n3.lVal_mut() = self;
+            var
+        }
+    }
+}
+
+
+pub fn hr_is_not_found(hr: &HResult) -> bool {
+    hr.code() == HResult::from(Win32Error::new(ERROR_FILE_NOT_FOUND)).code()
+}
+
+pub fn hr_is_already_exists(hr: &HResult) -> bool {
+    hr.code() == HResult::from(Win32Error::new(ERROR_ALREADY_EXISTS)).code()
+}
+
+pub fn date_to_datetime(date: wtypes::DATE) -> String {
+    const OFFSET_DAYS: i32 = 25569; // 从 "1970-01-01" 到 "1899-12-30" 的天数
+    const SECONDS_PER_DAY: i64 = 86_400; // 一天的秒数
+
+    // 将date转换为Unix时间戳（从 "1970-01-01" 开始）
+    let timestamp = (date - OFFSET_DAYS as f64) * SECONDS_PER_DAY as f64;
+
+    // 创建一个 'NaiveDateTime' 的实例
+    match NaiveDateTime::from_timestamp_opt(timestamp as i64, 0)  {
+        None => {"".to_string()}
+        Some(val) => {val.to_string()}
+    }
+}
+
+
+
+#[derive(Clone, Debug, Fail)]
+pub enum ConnectTaskServiceError {
+    #[fail(display = "{}", _0)]
+    CreateInstanceFailed(#[fail(cause)] HResult),
+    #[fail(display = "Access is denied to connect to the Task Scheduler service")]
+    AccessDenied(#[fail(cause)] HResult),
+    #[fail(display = "The Task Scheduler service is not running")]
+    ServiceNotRunning(#[fail(cause)] HResult),
+    #[fail(display = "{}", _0)]
+    ConnectFailed(#[fail(cause)] HResult),
+}
+
+
+
+
+
+#[derive(Clone, Copy, Debug)]
+#[repr(u32)]
+pub enum InstancesPolicy {
+    Parallel = taskschd::TASK_INSTANCES_PARALLEL,
+    Queue = taskschd::TASK_INSTANCES_QUEUE,
+    IgnoreNew = taskschd::TASK_INSTANCES_IGNORE_NEW,
+    StopExisting = taskschd::TASK_INSTANCES_STOP_EXISTING,
 }

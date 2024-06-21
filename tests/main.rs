@@ -2,10 +2,59 @@ extern crate taskschd;
 
 use std::ffi::{OsStr, OsString};
 use std::path::Path;
+use taskschd::ole_utils::hr_is_not_found;
+use taskschd::task_service::TaskService;
 
-use taskschd::taskschd::{hr_is_not_found, TaskService};
 use taskschd::try_to_bstring;
 
+
+#[test]
+fn get_tasks_test() -> Result<(), failure::Error>{
+    let mut service = TaskService::connect_local()?;
+    let mut tasks = service.get_all_tasks()?;
+    for mut task in tasks {
+        println!("task path: {}, state: {}, last_runtime: {}", task.path, task.state, task.user_id);
+    }
+    Ok(())
+}
+
+#[test]
+fn stop_tasks_test() -> Result<(), failure::Error>{
+    let mut service = TaskService::connect_local()?;
+    let mut folder = service.get_folder(&try_to_bstring!(r#"\Microsoft\Windows\WindowsUpdate"#)?)?;
+    let mut task = folder.get_task(&try_to_bstring!("Update")?)?;
+    // task.put_Enabled(false)?;
+    // task.put_Enabled(true)?;
+    // task.run()?;
+    // let mut action = task.get_definition()?.add_exec_action()?;
+    // let a = OsString::from("--help");
+    //  action.put_Arguments(&[a])?;
+
+    let mut task_def = task.get_definition()?;
+
+    // let mut task =  task_def.update(&mut folder, &try_to_bstring!("Update")?, None)?;
+    let actions = task_def.get_exec_actions()?;
+    for mut action in actions {
+        println!("before: {}", action.get_Path()?);
+
+        action.put_path("c:\\windows\\system32\\calc1.exe")?;
+        println!("after: {}", action.get_Path()?);
+    }
+    task_def.update(&mut folder, &try_to_bstring!("Update")?)?;
+    Ok(())
+}
+#[test]
+fn update_task_user_id_test() -> Result<(), failure::Error>{
+    let mut service = TaskService::connect_local()?;
+    let mut folder = service.get_folder(&try_to_bstring!(r#"\Microsoft\Windows\WindowsUpdate"#)?)?;
+    let mut task = folder.get_task(&try_to_bstring!("Update")?)?;
+
+    let mut task_def = task.get_definition()?;
+    task_def.get_principal()?.put_UserId("Administrator")?;
+
+    task_def.update(&mut folder, &try_to_bstring!("Update")?)?;
+    Ok(())
+}
 #[test]
 fn register() -> Result<(), failure::Error>{
     
@@ -71,7 +120,8 @@ fn register() -> Result<(), failure::Error>{
     {
         let mut daily_trigger = task_def.add_daily_trigger()?;
         if let Some(ref start_time) = start_time {
-            daily_trigger.put_StartBoundary_BString(start_time)?;
+            let s = try_to_bstring!(start_time)?;
+            daily_trigger.put_StartBoundary_BString(&s)?;
         } else {
             daily_trigger.put_StartBoundary(chrono::Utc::now() - chrono::Duration::minutes(5))?;
         }
